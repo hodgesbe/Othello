@@ -20,7 +20,9 @@ public class Game {
             currentPlayer = OPPONENT;
 
         board = new Board(myColor);
+        System.out.println(board.isValidPosition(ME, 6, 5));
         board.printBoard();
+
     }
 
     public static String readInput(){
@@ -38,6 +40,8 @@ public class Game {
 
     public static void main(String[] args){
         startGame();
+
+
     }
 
 }
