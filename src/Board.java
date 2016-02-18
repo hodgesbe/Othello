@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -10,188 +11,202 @@ public class Board {
 
     public static final int BORDER = -2;
     public static final int EMPTY = 0;
-    int[][] board = new int[10][10];
+    int[] board = new int[100];
     boolean gameOver = false;
 
-    public Board(String color) {
-        initBoard(color);
+    public Board(String initColor) {
+        initBoard(initColor);
     }
 
-    private void initBoard(String color){
-        int black = 0;
-        int white = 0;
-        if (color.equals("IB")){
+    private void initBoard(String initColor){
+        int black = 0, white = 0;
+
+        if (initColor.equals("IB")){
             black = 1;
             white = -1;
             System.out.println("R B");
-        }else if(color.equals("IW")){
+        }else if(initColor.equals("IW")){
             black = -1;
             white = 1;
             System.out.println("R W");
         }else
             System.out.println("Invalid init command. Please enter 'I B' or I W' to initialize");
 
-        for(int i = 0; i<board.length; i++){
-            for(int j = 0; j<board.length; j++){
-                if (i == 0 || i == 9){
-                    board[i][j] = BORDER;
-                }else if (j == 0 || j == 9){
-                    board[i][j] = BORDER;
-                }else
-                    board[i][j] = EMPTY;
+        for (int i = 0; i<board.length; i++){
+
+            if(i<10){
+                board[i] = BORDER;
+            }else if ((i % 10 == 0) || ((i+1) % 10 ==0)){
+                board[i] = BORDER;
+            }else if (i > 89){
+                board[i] = BORDER;
+            }else if(i == 44 || i == 55){
+                board[i] = white;
+            }else if(i == 45 || i == 54){
+                board[i] = black;
             }
         }
-
-        board[4][4] = white;
-        board[4][5] = black;
-        board[5][4] = black;
-        board[5][5] = white;
     }
 
     public void printBoard(){
-        for (int i = 0; i < board.length; i++){
-            for (int j = 0; j < board.length; j++){
-                if (board[i][j]>-1){
-                    System.out.print(" "+board[i][j]+" ");
-                }else
-                    System.out.print(board[i][j]+" ");
+        int count = 0;
+        for (int i = 0; i<board.length; i++){
+            if (count == 10){
+                System.out.println();
+                count = 0;
             }
-            System.out.print("\n");
+            if (board[i]>-1){
+                    System.out.print(" "+board[i]+" ");
+            }else
+                    System.out.print(board[i]+" ");
+
+            count++;
         }
     }
 
-
-    public boolean isValidPosition(int player, int row, int col){
-        boolean check = false;
-        board[row][col] = player;
+    private boolean isValidMove(int player, int space){
+        boolean isValid = false;
+        int tempSpace;
         try {
-            //check north
-            if (board[row-1][col] == player * -1){
-                System.out.println("Checking North");
-                for (int i = 1; i < row; i++){
-                    if (board[(row-1)-i][col] == player) {
-                        check = true;
-                        break;
-                    } else if (board[(row-1)-i][col] == 0){
-                        check = false;
-                        break;
-                    }else
-                        check= true;
-                }
-            //check west
-            }else if (board[row][col-1] == player * -1){
-                System.out.println("Checking west");
-                for (int i = 1; i < col; i++){
-                    if (board[row][(col-1)-i] == player) {
-                        check = true;
-                        break;
+            // is zero
+            if (board[space] == 0) {
+                //check north -10
+                if (board[space-10] == (player * -1)){
+                    tempSpace = space-20;
+                    while (board[tempSpace] != BORDER){
+                        if (board[tempSpace] == player){
+                            isValid = true;
+                            break;
+                        }else if (board[tempSpace] == 0){
+                            isValid = false;
+                            break;
+                        }
+                        tempSpace-=10;
+                    }
+                }//end north
 
-                    }else if (board[row][(col-1)-i] == 0){
-                        check = false;
-                        break;
-                    }else
-                        check = true;
-                }
-            //check northwest
-            }else if (board[row-1][col-1] == player * -1){
-                System.out.println("Checking northwest");
-                for (int i = 1; i < col; i++){
-                    if (board[(row-1)-i][(col-1)-1] == player ) {
-                        check = true;
-                        break;
+                //check northeast -9
+                else if (board[space-9] == (player * -1)){
+                    tempSpace = space-18;
+                    while (tempSpace != BORDER){
+                        if (board[tempSpace] == player){
+                            isValid = true;
+                            break;
+                        }else if (board[tempSpace] == 0){
+                            isValid = false;
+                            break;
+                        }
+                        tempSpace -=9;
+                    }
 
-                    }else if (board[(row-1)-i][(col-1)-1] == 0){
-                        check = false;
-                        break;
-                    }else
-                        check = true;
-                }
-            //check south
-            }else if (board[row+1][col] == player * -1) {
-                System.out.println("Checking south");
-                for (int i = 1; i < 8-row; i++) {
-                    if (board[(row + 1) + i][col] == player) {
-                        check = true;
-                        break;
+                }//end northeast
 
-                    } else if (board[(row + 1) + i][col] == 0) {
-                        check = false;
-                        break;
-                    }else
-                        check = true;
-                }
-            //check south west
-            }else if (board[row+1][col-1] == player * -1){
-                System.out.println("Checking southwest");
-                for (int i = 1; i < row; i++){
-                    if (board[(row+1)+i][(col-1)-i] == player) {
-                        check = true;
-                        break;
+                //check east +1
+                else if (board[space+1] == (player * -1)){
+                    tempSpace = space+2;
+                    while (board[tempSpace] != BORDER){
+                        if (board[tempSpace] == player){
+                            isValid = true;
+                            break;
+                        }else if (board[tempSpace] == 0){
+                            isValid = false;
+                            break;
+                        }
+                        tempSpace++;
+                    }
+                    
+                }//end east
 
-                    }else if (board[(row+1)+i][(col-1)-i] == 0){
-                        check = false;
-                        break;
-                    }else
-                        check = true;
-                }
-             //check east
-            }else if (board[row][col+1] == player * -1){
-                System.out.println("checking east");
-                System.out.println("found op" +board[row][col+1]);
-                for (int i = 1; i < 8-col; i++){
-                    System.out.println(i);
-                    if (board[row][col+1]+i == player) {
-                        check = true;
-                        System.out.println(board[row][col+1]+i+" is "+ check);
-                        break;
+                //check southeast +11
+                else if (board[space+11] == (player * -1)){
+                    tempSpace = space+22;
+                    while (board[tempSpace] != BORDER){
+                        if (board[tempSpace] == player){
+                            isValid = true;
+                            break;
+                        }else if (board[tempSpace] == 0){
+                            isValid = false;
+                            break;
+                        }
+                        tempSpace+=11;
+                    }
+                }//end southeast
 
-                    }else if (board[row][(col+1)+i] == 0){
-                        check = false;
-                        break;
-                    }else
-                        check = true;
-                }
-            //check south-east
-            }else if (board[row+1][col+1] == player * -1){
-                System.out.println("Checking southeast");
-                for (int i = 1; i < row-8; i++){
-                    if (board[(row+1)+i][(col+1)+i] == player) {
-                        check = true;
-                        break;
+                //check south +10
+                else if (board[space+10] == (player * -1)){
+                    tempSpace = space+20;
+                    while (board[tempSpace] != BORDER){
+                        if (board[tempSpace] == player){
+                            isValid = true;
+                            break;
+                        }else if (board[tempSpace] == 0){
+                            isValid = false;
+                            break;
+                        }
+                        tempSpace+=10;
+                    }
+                }//end south
 
-                    }else if (board[(row+1)+i][(col+1)+i] == 0){
-                        check = false;
-                        break;
-                    }else
-                        check = true;
-                }
-            //check north-east
-            }else if (board[row-1][col+1] == player * -1){
-                System.out.println("checking north east");
-                for (int i = 1; i < 8-col; i++){
-                    if (board[(row-1)-i][(col+1)+i] == player) {
-                        check = true;
-                        break;
-
-                    }else if (board[(row-1)-i][(col+1)+i] == 0){
-                        check = false;
-                        break;
-                    }else
-                        check = true;
-                }
+                //check southwest +9
+                else if (board[space+9] == (player * -1)){
+                    tempSpace = space+18;
+                    while (board[tempSpace] != BORDER){
+                        if (board[tempSpace] == player){
+                            isValid = true;
+                            break;
+                        }else if (board[tempSpace] == 0){
+                            isValid = false;
+                            break;
+                        }
+                        tempSpace+=9;
+                    }
+                }//end southwest
+                //check west -1
+                else if (board[space-1] == (player * -1)){
+                    tempSpace = space-2;
+                    while (board[tempSpace] != BORDER){
+                        if (board[tempSpace] == player){
+                            isValid = true;
+                            break;
+                        }else if (board[tempSpace] == 0){
+                            isValid = false;
+                            break;
+                        }
+                        tempSpace-=1;
+                    }
+                }//end west
+                //check northwest -11
+                else if (board[space-11] == (player * -1)){
+                    tempSpace = space-22;
+                    while (board[tempSpace] != BORDER){
+                        if (board[tempSpace] == player){
+                            isValid = true;
+                            break;
+                        }else if (board[tempSpace] == 0){
+                            isValid = false;
+                            break;
+                        }
+                        tempSpace-=11;
+                    }
+                }//end northwest
             }
 
         } catch (ArrayIndexOutOfBoundsException e){
-            System.out.println("checked on out of bound space");
+            System.out.println("Checked out of bounds");
         }
 
-        return check;
+        return isValid;
     }
 
-    public boolean isGameOver(){
-        if (gameOver){
-            return true;
-        }else
-            return false;
+    public ArrayList generateMoves(int player){
+        ArrayList<Integer> moveList = new ArrayList<Integer>();
+        for (int i = 0; i < board.length; i++){
+            if (isValidMove(player, i)){
+                moveList.add(new Integer(i));
+            }
+        }
+        return moveList;
     }
 }
+
+

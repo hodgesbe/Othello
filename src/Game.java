@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 /**
@@ -11,6 +13,7 @@ public class Game {
     static int currentPlayer = 0;
     static String myColor = null;
     static Board board;
+    static ArrayList myMoves;
 
     public static void startGame() {
         myColor = readInput();
@@ -20,27 +23,22 @@ public class Game {
             currentPlayer = OPPONENT;
 
         board = new Board(myColor);
-        System.out.println(board.isValidPosition(ME, 6, 5));
         board.printBoard();
-
+        myMoves = board.generateMoves(ME);
+        System.out.println();
+        for (int i = 0; i<myMoves.size(); i++){
+            System.out.print("Move "+i+"is: "+myMoves.get(i)+", ");
+        }
     }
 
     public static String readInput(){
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
-        return input.replaceAll("\\s+","");
-    }
-
-    public void playGame(){
-        String move = null;
-        while(!board.isGameOver()){
-
-        }
+        return input.replaceAll("\\s+","").toUpperCase();
     }
 
     public static void main(String[] args){
         startGame();
-
 
     }
 
