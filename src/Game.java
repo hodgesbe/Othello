@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Scanner;
 
 /**
@@ -8,26 +7,45 @@ import java.util.Scanner;
 
 //Main game class
 public class Game {
-    public static final int ME = 1;
-    public static final int OPPONENT = -1;
-    static int currentPlayer = 0;
-    static String myColor = null;
-    static Board board;
-    static ArrayList myMoves;
+    final int ME = 1;
+    final int OPPONENT = -1;
+    int currentPlayer = 0;
+    String initColor = null;
+    char myColor;
+    char oppColor;
+    Board board;
+    ArrayList myMoves;
 
-    public static void startGame() {
-        myColor = readInput();
-        if (myColor.equals("IB")){
+    public Game() {
+
+        initColor = readInput();
+        if (initColor.equals("IB")){
             currentPlayer = ME;
-        }else
+            myColor = 'B';
+            oppColor = 'W';
+        }else{
             currentPlayer = OPPONENT;
-
-        board = new Board(myColor);
+            myColor = 'W';
+            oppColor = 'B';
+        }
+        board = new Board(initColor);
         board.printBoard();
-        myMoves = board.generateMoves(ME);
-        System.out.println();
-        for (int i = 0; i<myMoves.size(); i++){
-            System.out.print("Move "+i+"is: "+myMoves.get(i)+", ");
+    }
+
+    private void playGame(){
+
+        String move;
+        while (!board.gameOver){
+            //if the current player is me, take move from move list and play it
+            if (currentPlayer == ME){
+                board.applyMove(myColor+board.generateMoves(ME).get(0).toString());
+                board.printBoard();
+                currentPlayer = OPPONENT;
+            }else{
+                board.applyMove(readInput());
+                board.printBoard();
+                currentPlayer = ME;
+            }
         }
     }
 
@@ -38,7 +56,8 @@ public class Game {
     }
 
     public static void main(String[] args){
-        startGame();
+        Game testGame = new Game();
+        testGame.playGame();
 
     }
 

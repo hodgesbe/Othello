@@ -9,12 +9,24 @@ import java.util.List;
 //Board Class
 public class Board {
 
-    public static final int BORDER = -2;
-    public static final int EMPTY = 0;
+    final int BORDER = -2;
+    final int EMPTY = 0;
+    final int ME = 1;
+    final int OPPONENT = -1;
+    char myColor;
+    char oppColor;
     int[] board = new int[100];
     boolean gameOver = false;
+    boolean pass = false;
 
     public Board(String initColor) {
+        if (initColor.equals("IB")){
+            myColor = 'B';
+            oppColor = 'W';
+        }else {
+            myColor = 'W';
+            oppColor = 'B';
+        }
         initBoard(initColor);
     }
 
@@ -44,24 +56,114 @@ public class Board {
                 board[i] = white;
             }else if(i == 45 || i == 54){
                 board[i] = black;
-            }
+            }else
+                board[i] = EMPTY;
         }
     }
 
     public void printBoard(){
         int count = 0;
+        System.out.println("       A  B  C  D  E  F  G  H");
         for (int i = 0; i<board.length; i++){
             if (count == 10){
                 System.out.println();
                 count = 0;
             }
-            if (board[i]>-1){
+            if (i%10 == 0){
+
+                if ((i/10 > 0) && (i/10 < 9)){
+                    System.out.print(i/10+"  ");
+                }else
+                    System.out.print("   ");
+            }
+            if (board[i] > -1){
                     System.out.print(" "+board[i]+" ");
             }else
                     System.out.print(board[i]+" ");
 
             count++;
         }
+        System.out.println();
+    }
+
+
+    public ArrayList generateMoves(int player){
+
+        ArrayList<String> moveList = new ArrayList<>();
+        int row = 0;
+        char col;
+                ;
+        for (int i = 0; i < board.length; i++){
+
+            if (isValidMove(player, i)){
+                col = (char) ((i%10)+64);
+                row = i / 10;
+                moveList.add(""+col+""+row);
+                System.out.println("found move: "+col+" "+row);
+            }
+
+        }
+
+        return moveList;
+    }
+
+    public void applyMove(String move){
+        try {
+
+
+            int player;
+
+            if (move.charAt(0) == myColor) {
+                player = ME;
+            } else
+                player = OPPONENT;
+
+            if (move.length() == 1) {
+                pass = true;
+                System.out.println(move);
+            } else {
+
+                int col = ((int) move.charAt(1)) - 64;
+                int row = ((int) move.charAt(2)) - 48;
+                int boardPosition = (row * 10) + col;
+                if (isValidMove(player, boardPosition)) {
+                    board[boardPosition] = player;
+                    System.out.println(move.charAt(0) + " " + move.charAt(1) + " " + move.charAt(2));
+                } else {
+                    System.out.println("C This is not a valid move, please enter another...");
+                    applyMove(Game.readInput());
+                }
+            }
+        } catch (StringIndexOutOfBoundsException e){
+            System.out.println("C Please enter a valid command.");
+            applyMove(Game.readInput());
+        }
+    }
+
+    //method for flipping captured pieces
+    private void flip(){
+
+    }
+
+    public boolean gameOver(){
+        boolean meCheck = false;
+        boolean oppCheck = false;
+
+        //Check if computer has valid move
+        for (int i = 11; i < board.length-11; i++){
+            meCheck = isValidMove(ME, i);
+        }
+
+        //Check if Opponent has valid move
+        for (int i = 11; i < board.length-11; i++){
+            oppCheck = isValidMove(OPPONENT, i);
+        }
+
+        //if neither player has valid move, game over.
+        if (!meCheck && !oppCheck){
+            return true;
+        }else
+            return false;
     }
 
     private boolean isValidMove(int player, int space){
@@ -69,7 +171,7 @@ public class Board {
         int tempSpace;
         try {
             // is zero
-            if (board[space] == 0) {
+            if (board[space] == EMPTY) {
                 //check north -10
                 if (board[space-10] == (player * -1)){
                     tempSpace = space-20;
@@ -198,15 +300,6 @@ public class Board {
         return isValid;
     }
 
-    public ArrayList generateMoves(int player){
-        ArrayList<Integer> moveList = new ArrayList<Integer>();
-        for (int i = 0; i < board.length; i++){
-            if (isValidMove(player, i)){
-                moveList.add(new Integer(i));
-            }
-        }
-        return moveList;
-    }
 }
 
 
