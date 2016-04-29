@@ -1,64 +1,99 @@
-import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
- * Created by bHodges on 2/10/16.
+ * Created by bHodges on 4/18/16.
  */
-
-//Main game class
 public class Game {
-    final int ME = 1;
-    final int OPPONENT = -1;
-    int currentPlayer = 0;
-    String initColor = null;
-    char myColor;
-    char oppColor;
-    Board board;
-    ArrayList myMoves;
+
+    String initColor;
+    Board gameBoard;
+    Player opp;
+    Player me;
+    Player currentPlayer;
 
     public Game() {
-
         initColor = readInput();
-        if (initColor.equals("IB")){
-            currentPlayer = ME;
-            myColor = 'B';
-            oppColor = 'W';
-        }else{
-            currentPlayer = OPPONENT;
-            myColor = 'W';
-            oppColor = 'B';
+
+        if (initColor.equals("IB")) {
+            me = new Player('B', 1);
+            opp = new Player('W', -1);
+            currentPlayer = me;
+        } else {
+            me = new Player('W', 1);
+            opp = new Player('B', -1);
+            currentPlayer = opp;
         }
-        board = new Board(initColor);
-        board.printBoard();
+
+        me.setOpponant(opp);
+        opp.setOpponant(me);
+        gameBoard = new Board(initColor);
+        playGame();
     }
 
-    private void playGame(){
+    //Method to start playing a game
+    public void playGame() {
+        String oppMove = null;
+        String move = null;
 
-        String move;
-        while (!board.gameOver){
-            //if the current player is me, take move from move list and play it
-            if (currentPlayer == ME){
-                board.applyMove(myColor+board.generateMoves(ME).get(0).toString());
-                board.printBoard();
-                currentPlayer = OPPONENT;
-            }else{
-                board.applyMove(readInput());
-                board.printBoard();
-                currentPlayer = ME;
+        //while game is not over and both players still have time left
+        while (me.hasTimeLeft && opp.hasTimeLeft && !gameBoard.isGameOver()) {
+
+            //if it is my turn
+            if (currentPlayer == me) {
+                me.startTurn();
+                gameBoard.generateMoves(me);
+                Move myMove = gameBoard.alphaBeta(gameBoard, 0, me, Double.MIN_VALUE, Double.MAX_VALUE, 10);
+                if (myMove.move.length() == 1) {
+                    System.out.println(myMove.move);
+                    me.endTurn();
+                    currentPlayer = opp;
+                } else {
+                    gameBoard.applyMove(me, myMove.move);
+                    System.out.println("" + me.getPlayerColor() + " " + myMove.move.toLowerCase().charAt(0) + " " + myMove.move.charAt(1));
+                    gameBoard.printBoard();
+                    me.endTurn();
+                    currentPlayer = opp;
+                }
+
+                //else it is opp turn
+            } else {
+                opp.startTurn();
+                oppMove = readInput();
+
+                //checks for pass move
+                if (oppMove.length() > 1) {
+                    move = "" + oppMove.charAt(1) + oppMove.charAt(2);
+                    gameBoard.applyMove(opp, move);
+                    gameBoard.printBoard();
+                    opp.endTurn();
+                    currentPlayer = me;
+                } else
+                    opp.endTurn();
+                currentPlayer = me;
             }
+            //evaluate board after both moves have been made
+            gameBoard.evaluateBoard(me, opp);
+        }
+
+        if (gameBoard.isGameOver()) {
+            gameBoard.whoWon(me, opp);
         }
     }
 
-    public static String readInput(){
+    //Method to read input from opposing player
+    public String readInput() {
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
-        return input.replaceAll("\\s+","").toUpperCase();
+        if (input.charAt(0) == 'C') {
+            readInput();
+        }
+        return input.replaceAll("\\s+", "").toUpperCase();
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Game testGame = new Game();
         testGame.playGame();
-
     }
+
 
 }
